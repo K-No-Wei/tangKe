@@ -16,7 +16,9 @@ public class Shot implements Runnable{
 
     @Override
     public void run() {
-        while (true){
+        while (isLive){
+
+
 
             if (!(x >= 0 && x <= StaticS.Screen_x && y >= 0 && y <= StaticS.Screen_y)) {
                 isLive = false;
