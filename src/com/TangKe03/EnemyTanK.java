@@ -14,7 +14,31 @@ public class EnemyTanK extends TanK implements Runnable{
 
     @Override
     public void run() {
-        while (true){
+        while (isLive){
+
+            if( isLive && shots.size() < 2 ){
+                Shot s = null;
+//                坦克方向昂
+                switch (getDirect()){
+                    case 0:
+                        s = new Shot(getX() +20, getY(), getDirect());
+                        break;
+                    case 1:
+                        s = new Shot(getX() + 60, getY() + 20, getDirect());
+                        break;
+                    case 2:
+                        s = new Shot(getX() + 20, getY() + 60, getDirect());
+                        break;
+                    case 3:
+                        s = new Shot(getX(), getY() + 20, getDirect());
+                        break;
+                }
+                shots.add(s);
+
+            }
+            for (Shot shot : shots) {
+                new Thread(shot).start();
+            }
 //            根据方向移动坦克
             for(int i = 0; i < (int)((Math.random()*(100-30))+ 30); i++){
                 switch (getDirect()){
@@ -90,16 +114,14 @@ public class EnemyTanK extends TanK implements Runnable{
 //            }
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
             setDirect((int)(Math.random() * 4));
 
-            if(isLive == false){
-                break;
-            }
+
         }
     }
 }

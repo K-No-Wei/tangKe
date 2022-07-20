@@ -17,22 +17,15 @@ public class Shot implements Runnable{
     @Override
     public void run() {
         while (isLive){
-
-
-
             if (!(x >= 0 && x <= StaticS.Screen_x && y >= 0 && y <= StaticS.Screen_y)) {
                 isLive = false;
                 break;
             }
-
-
-
             try {
-                Thread.sleep(500);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
             switch (direct){
                 case 0:
                     y -= speed;
@@ -47,7 +40,7 @@ public class Shot implements Runnable{
                     x -= speed;
                     break;
             }
-            System.out.println("子弹" + x + " " + y);
+
         }
     }
 }

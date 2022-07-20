@@ -20,6 +20,9 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
 //    存放炸弹
     Vector<Bomb> bombs = new Vector<>();
 
+//    存放我方发射的子弹
+    Vector<Shot> shots = new Vector<>();
+
     Image image1 = null;
     Image image2 = null;
     Image image3 = null;
@@ -27,7 +30,7 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
     int enemyTankSize = 3;
 
     public MyPanel(){
-        hero = new Hero(100,100);
+        hero = new Hero(500,100);
 //        设置坦克速度
         hero.setSpeed(6);
 
@@ -42,8 +45,9 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
             enemyTanK.shots.add(shot);
             new Thread(shot).start();
             enemyTanKS.add(enemyTanK);
-
         }
+
+
         image1 = Toolkit.getDefaultToolkit().getImage(Panel.class.getResource("/bomb_1.png"));
         image2 = Toolkit.getDefaultToolkit().getImage(Panel.class.getResource("/bomb_2.png"));
         image3 = Toolkit.getDefaultToolkit().getImage(Panel.class.getResource("/bomb_3.png"));
@@ -56,13 +60,14 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
 //        g.setColor(Color.red);
         g.fillRect(0,0,StaticS.Screen_x,StaticS.Screen_y);    //填矩形
 
-//        画出子弹
-        if(hero.shot != null && hero.shot.isLive){
-            System.out.println("子弹开始");
-            Color color = g.getColor();
-            g.setColor(Color.CYAN);
-            g.draw3DRect(hero.shot.x, hero.shot.y, 4, 4, false);
-            g.setColor(color);
+        for(int i = 0; i < hero.shots.size(); i++){
+            Shot shot = hero.shots.get(i);
+            if(shot.isLive){
+                Color color = g.getColor();
+                g.setColor(Color.CYAN);
+                g.draw3DRect(shot.x, shot.y, 4, 4, false);
+                g.setColor(color);
+            }
         }
         
 //        画爆炸
@@ -84,7 +89,9 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
 
 
 //        画坦克-方法
-        drawTank(hero.getX(), hero.getY(), g, hero.getDirect(), 0);
+        if(hero.isLive) {
+            drawTank(hero.getX(), hero.getY(), g, hero.getDirect(), 0);
+        }
 
         for (int i = 0; i < enemyTanKS.size(); i++) {
             EnemyTanK enemyTanK = enemyTanKS.get(i);
@@ -95,7 +102,7 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
 //            画出子弹
                 for (int j = 0; j < enemyTanK.shots.size(); j++) {
                     Shot shot = enemyTanK.shots.get(j);
-                    if (shot != null && shot.isLive) {
+                    if (shot.isLive) {
                         Color color = g.getColor();
                         g.setColor(Color.yellow);
                         g.draw3DRect(shot.x, shot.y, 4, 4, false);
@@ -169,7 +176,7 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
 //    判断子弹击中
     public void hitTank(Shot s, EnemyTanK enemyTanK){
 //        防止区域内子弹路过消失的坦克区域是时消失
-//        if (enemyTanK.isLive) {
+        if (enemyTanK.isLive) {
             switch (enemyTanK.getDirect()) {
                 case 0:
                 case 2:
@@ -177,11 +184,10 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
                             && s.y > enemyTanK.getY() && s.y < enemyTanK.getY() + 60) {
                         s.isLive = false;
                         enemyTanK.isLive = false;
-
+                        hero.shots.remove(s);
 //                        创建Bomb
                         Bomb bomb = new Bomb(enemyTanK.getX(), enemyTanK.getY());
                         bombs.add(bomb);
-                        System.out.println("----------------------");
                     }
                     break;
                 case 1:
@@ -190,13 +196,58 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
                             && s.y > enemyTanK.getY() && s.x < enemyTanK.getY() + 40) {
                         s.isLive = false;
                         enemyTanK.isLive = false;
+                        hero.shots.remove(s);
                         //                        创建Bomb
                         Bomb bomb = new Bomb(enemyTanK.getX(), enemyTanK.getY());
                         bombs.add(bomb);
                     }
                     break;
             }
-//        }
+        }
+    }
+    public void hitTank(Shot s, TanK enemyTanK){
+//        防止区域内子弹路过消失的坦克区域是时消失
+        if (enemyTanK.isLive) {
+            switch (enemyTanK.getDirect()) {
+                case 0:
+                case 2:
+                    if (s.x > enemyTanK.getX() && s.x < enemyTanK.getX() + 40
+                            && s.y > enemyTanK.getY() && s.y < enemyTanK.getY() + 60) {
+                        s.isLive = false;
+                        enemyTanK.isLive = false;
+                        hero.shots.remove(s);
+//                        创建Bomb
+                        Bomb bomb = new Bomb(enemyTanK.getX(), enemyTanK.getY());
+                        bombs.add(bomb);
+                    }
+                    break;
+                case 1:
+                case 3:
+                    if (s.x > enemyTanK.getX() && s.x < enemyTanK.getX() + 60
+                            && s.y > enemyTanK.getY() && s.x < enemyTanK.getY() + 40) {
+                        s.isLive = false;
+                        enemyTanK.isLive = false;
+                        hero.shots.remove(s);
+                        //                        创建Bomb
+                        Bomb bomb = new Bomb(enemyTanK.getX(), enemyTanK.getY());
+                        bombs.add(bomb);
+                    }
+                    break;
+            }
+        }
+    }
+
+//    我方坦克被击中
+    public void hitHero(){
+        for(int i = 0; i < enemyTanKS.size(); i++){
+            EnemyTanK enemyTanK = enemyTanKS.get(i);
+            for(int j = 0; j < enemyTanK.shots.size(); j++){
+                Shot shot = enemyTanK.shots.get(j);
+                if(hero.isLive){
+                    hitTank(shot, hero);
+                }
+            }
+        }
     }
 
     @Override
@@ -228,7 +279,7 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
                 hero.move(3);
         }
 
-        else if(e.getKeyCode() == KeyEvent.VK_J){
+        else if(e.getKeyCode() == KeyEvent.VK_J && hero.isLive){
             hero.shotEnemyTank();
         }
 
@@ -250,17 +301,34 @@ public class MyPanel extends JPanel implements KeyListener,Runnable {
                 e.printStackTrace();
             }
 //            判断是否击中敌人
-            if(hero.shot != null&& hero.shot.isLive){
-                for(int i = 0; i < enemyTanKS.size(); i++){
-                    EnemyTanK enemyTanK = enemyTanKS.get(i);
-                    //        防止区域内子弹路过消失的坦克区域是时消失
-                    if(enemyTanK.isLive)
-                        hitTank(hero.shot, enemyTanK);
-                    else {
-                        enemyTanKS.remove(enemyTanK);
+//            循环己方坦克的子弹
+            for(int i = 0; i < hero.shots.size(); i++){
+                Shot shot = hero.shots.get(i);
+                if(shot.isLive){
+                    for(int j = 0; j <enemyTanKS.size(); j++){
+                        EnemyTanK enemyTanK = enemyTanKS.get(j);
+                        if(enemyTanK.isLive){
+                            hitTank(shot,enemyTanK);
+                        }else {
+                            enemyTanKS.remove(enemyTanK);
+                        }
                     }
                 }
             }
+//            敌方击中我方
+            hitHero();
+
+//            if(hero.shot != null&& hero.shot.isLive){
+//                for(int i = 0; i < enemyTanKS.size(); i++){
+//                    EnemyTanK enemyTanK = enemyTanKS.get(i);
+//                    //        防止区域内子弹路过消失的坦克区域是时消失
+//                    if(enemyTanK.isLive)
+//                        hitTank(hero.shot, enemyTanK);
+//                    else {
+//                        enemyTanKS.remove(enemyTanK);
+//                    }
+//                }
+//            }
 
             this.repaint();
         }

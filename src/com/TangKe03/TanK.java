@@ -5,6 +5,7 @@ public class TanK {
     private int y;
     private int direct;
     private int speed;
+    boolean isLive = true;
 
 
 
